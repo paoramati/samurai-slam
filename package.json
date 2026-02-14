@@ -30,7 +30,9 @@
 		"test:coverage": "vitest run --coverage",
 		"test:e2e": "playwright test",
 		"test:e2e:ui": "playwright test --ui",
-		"test:all": "npm run test && npm run test:e2e"
+		"test:all": "npm run test && npm run test:e2e",
+		"lint": "prettier --check .",
+		"format": "prettier --write ."
 	},
 	"devDependencies": {
 		"@playwright/test": "^1.58.2",
@@ -40,6 +42,8 @@
 		"@sveltejs/vite-plugin-svelte": "5.0.3",
 		"@tsconfig/svelte": "^5.0.4",
 		"@vitest/coverage-v8": "^4.0.18",
+		"prettier": "^3.8.1",
+		"prettier-plugin-svelte": "^3.4.1",
 		"svelte": "5.23.1",
 		"svelte-check": "^4.0.2",
 		"terser": "5.39.0",

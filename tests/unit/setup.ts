@@ -12,8 +12,8 @@ import * as PhaserMock from 'phaser';
 import { EventBus } from '../../src/game/EventBus';
 
 afterEach(() => {
-    // Prevent listener bleed between tests
-    EventBus.removeAllListeners();
-    // Clear mock call history (preserves implementations)
-    vi.clearAllMocks();
+	// Prevent listener bleed between tests
+	EventBus.removeAllListeners();
+	// Clear mock call history (preserves implementations)
+	vi.clearAllMocks();
 });
