@@ -53,8 +53,9 @@ export class CombatSystem
             this.scene.physics.add.overlap(
                 projGroup.group,
                 eSprite,
-                (proj, _enemy) => {
-                    const p = proj as Phaser.Physics.Arcade.Sprite;
+                (obj1, obj2) => {
+                    // Phaser may swap callback parameter order — identify the projectile explicitly
+                    const p = (obj1 === eSprite ? obj2 : obj1) as Phaser.Physics.Arcade.Sprite;
                     const e = eSprite.getData('enemy') as Enemy | undefined;
                     if (p.active && e && e.isAlive) {
                         e.takeDamage(p.getData('damage') ?? 15);
@@ -68,8 +69,9 @@ export class CombatSystem
             this.scene.physics.add.overlap(
                 projGroup.group,
                 bossSprite,
-                (proj, _boss) => {
-                    const p = proj as Phaser.Physics.Arcade.Sprite;
+                (obj1, obj2) => {
+                    // Phaser may swap callback parameter order — identify the projectile explicitly
+                    const p = (obj1 === bossSprite ? obj2 : obj1) as Phaser.Physics.Arcade.Sprite;
                     const b = bossSprite.getData('boss') as Boss | undefined;
                     if (p.active && b && b.isAlive) {
                         b.takeDamage(p.getData('damage') ?? 15);

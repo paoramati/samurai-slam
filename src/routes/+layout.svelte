@@ -1,5 +1,5 @@
 <svelte:head>
-    <title>Phaser Svelte Template</title>
+    <title>⚔️ Samurai Slam ⚔️</title>
 </svelte:head>
 
 <slot />

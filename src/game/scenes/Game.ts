@@ -200,11 +200,13 @@ export class Game extends Scene
         });
 
         // Boss projectiles damage player
+        const playerSprite = this.player.sprite;
         this.physics.add.overlap(
             this.bossProjectiles.group,
-            this.player.sprite,
-            (proj, _player) => {
-                const p = proj as Phaser.Physics.Arcade.Sprite;
+            playerSprite,
+            (obj1, obj2) => {
+                // Phaser may swap callback parameter order — identify the projectile explicitly
+                const p = (obj1 === playerSprite ? obj2 : obj1) as Phaser.Physics.Arcade.Sprite;
                 if (p.active && this.player.isAlive) {
                     this.player.takeDamage(p.getData('damage') ?? 12);
                     this.bossProjectiles.killProjectile(p);
