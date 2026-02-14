@@ -31,19 +31,19 @@ Once the server is running, open `http://localhost:8080` in your browser.
 
 ## Available Commands
 
-| Command | Description |
-|---------|-------------|
-| `npm install` | Install project dependencies |
-| `npm run dev` | Launch dev server |
-| `npm run build` | Production build to `build/` folder |
-| `npm run preview` | Preview production build |
-| `npm run dev-nolog` | Dev server without Phaser analytics |
-| `npm run build-nolog` | Production build without Phaser analytics |
-| `npm test` | Run unit tests (Vitest) |
-| `npm run test:watch` | Run unit tests in watch mode |
-| `npm run test:coverage` | Run unit tests with coverage |
-| `npm run test:e2e` | Run E2E tests (Playwright) |
-| `npm run test:all` | Run unit + E2E tests |
+| Command                 | Description                               |
+| ----------------------- | ----------------------------------------- |
+| `npm install`           | Install project dependencies              |
+| `npm run dev`           | Launch dev server                         |
+| `npm run build`         | Production build to `build/` folder       |
+| `npm run preview`       | Preview production build                  |
+| `npm run dev-nolog`     | Dev server without Phaser analytics       |
+| `npm run build-nolog`   | Production build without Phaser analytics |
+| `npm test`              | Run unit tests (Vitest)                   |
+| `npm run test:watch`    | Run unit tests in watch mode              |
+| `npm run test:coverage` | Run unit tests with coverage              |
+| `npm run test:e2e`      | Run E2E tests (Playwright)                |
+| `npm run test:all`      | Run unit + E2E tests                      |
 
 ## Project Structure
 

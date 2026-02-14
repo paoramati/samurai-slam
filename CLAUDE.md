@@ -37,6 +37,7 @@ Samurai Slam is a top-down roguelike game built with Phaser 3, SvelteKit, TypeSc
 ## Architecture Details
 
 See `docs/` for detailed documentation:
+
 - `docs/architecture.md` — tech stack, scene flow, EventBus events, dungeon layout, combat system, physics
 - `docs/modules.md` — per-file module documentation
 - `docs/patterns.md` — code patterns and conventions
