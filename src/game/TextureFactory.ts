@@ -22,40 +22,32 @@ export class TextureFactory
 
     private static makeRect (scene: Scene, key: string, w: number, h: number, color: number, radius: number): void
     {
-        const rt = scene.add.renderTexture(0, 0, w, h);
-        const gfx = scene.add.graphics();
+        const gfx = scene.make.graphics({ x: 0, y: 0, add: false });
         gfx.fillStyle(color, 1);
         if (radius > 0) {
             gfx.fillRoundedRect(0, 0, w, h, radius);
         } else {
             gfx.fillRect(0, 0, w, h);
         }
-        rt.draw(gfx, 0, 0);
-        rt.saveTexture(key);
+        gfx.generateTexture(key, w, h);
         gfx.destroy();
-        rt.destroy();
     }
 
     private static makeCircle (scene: Scene, key: string, radius: number, color: number): void
     {
         const size = radius * 2 + 2;
-        const rt = scene.add.renderTexture(0, 0, size, size);
-        const gfx = scene.add.graphics();
+        const gfx = scene.make.graphics({ x: 0, y: 0, add: false });
         gfx.fillStyle(color, 1);
         gfx.fillCircle(radius + 1, radius + 1, radius);
-        rt.draw(gfx, 0, 0);
-        rt.saveTexture(key);
+        gfx.generateTexture(key, size, size);
         gfx.destroy();
-        rt.destroy();
     }
 
     private static makeMeleeFlash (scene: Scene): void
     {
         const size = 80;
-        const rt = scene.add.renderTexture(0, 0, size, size);
-        const gfx = scene.add.graphics();
+        const gfx = scene.make.graphics({ x: 0, y: 0, add: false });
         gfx.fillStyle(0x80cbc4, 0.7);
-        // Draw a sector arc (fan shape)
         gfx.beginPath();
         gfx.moveTo(size / 2, size / 2);
         const startAngle = -Phaser.Math.DegToRad(60);
@@ -67,9 +59,7 @@ export class TextureFactory
         }
         gfx.closePath();
         gfx.fillPath();
-        rt.draw(gfx, 0, 0);
-        rt.saveTexture('melee-flash');
+        gfx.generateTexture('melee-flash', size, size);
         gfx.destroy();
-        rt.destroy();
     }
 }

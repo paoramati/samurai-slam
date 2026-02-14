@@ -17,7 +17,7 @@ const NUM_ROOMS = 5;
 
 export class Game extends Scene
 {
-    private player!: Player;
+    private player: Player | null = null;
     private dungeon!: DungeonResult;
     private currentRoomId: number = 0;
     private currentEnemies: Enemy[] = [];
@@ -44,6 +44,10 @@ export class Game extends Scene
         this.currentEnemies = [];
         this.boss = null;
         this.playerColliders = [];
+
+        // Destroy old player to remove stale keyboard key registrations
+        this.player?.destroy();
+        this.player = null;
 
         // Ensure textures exist (idempotent)
         TextureFactory.generateAll(this);

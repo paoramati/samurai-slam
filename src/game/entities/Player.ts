@@ -10,17 +10,18 @@ export class Player
     score: number = 0;
     isAlive: boolean = true;
 
-    private cursors: Phaser.Types.Input.Keyboard.CursorKeys;
-    private wasd: {
-        W: Phaser.Input.Keyboard.Key;
-        A: Phaser.Input.Keyboard.Key;
-        S: Phaser.Input.Keyboard.Key;
-        D: Phaser.Input.Keyboard.Key;
-    };
-    private attackKey: Phaser.Input.Keyboard.Key;
+    // Use native DOM keyboard events instead of Phaser's keyboard plugin.
+    // Phaser's plugin can return null on scene restart in some builds (3.90+),
+    // whereas window events are always available.
+    private keysDown = new Set<string>();
+    private meleeJustPressed = false;
+    private onKeyDown!: (e: KeyboardEvent) => void;
+    private onKeyUp!: (e: KeyboardEvent) => void;
+
     private lastMeleeTime: number = 0;
     private lastShotTime: number = 0;
-    private meleeFlash: Phaser.GameObjects.Image | null = null;
+    private meleeGfx: Phaser.GameObjects.Graphics | null = null;
+    private meleeAngle: number = 0;
     private facingAngle: number = 0;  // radians, updated from movement each frame
 
     private readonly SPEED = 200;
@@ -34,33 +35,33 @@ export class Player
         this.sprite.setCollideWorldBounds(false);
         this.sprite.setDepth(10);
 
-        const kb = scene.input.keyboard!;
-        this.cursors = kb.createCursorKeys();
-        this.wasd = {
-            W: kb.addKey(Phaser.Input.Keyboard.KeyCodes.W),
-            A: kb.addKey(Phaser.Input.Keyboard.KeyCodes.A),
-            S: kb.addKey(Phaser.Input.Keyboard.KeyCodes.S),
-            D: kb.addKey(Phaser.Input.Keyboard.KeyCodes.D),
+        this.onKeyDown = (e: KeyboardEvent) => {
+            this.keysDown.add(e.code);
+            if (e.code === 'KeyF') this.meleeJustPressed = true;
         };
-        this.attackKey = kb.addKey(Phaser.Input.Keyboard.KeyCodes.F);
+        this.onKeyUp = (e: KeyboardEvent) => {
+            this.keysDown.delete(e.code);
+        };
+        window.addEventListener('keydown', this.onKeyDown);
+        window.addEventListener('keyup', this.onKeyUp);
     }
 
     update (time: number, _delta: number, pointer: Phaser.Input.Pointer): void
     {
         if (!this.isAlive) return;
 
-        // Movement
-        const left = this.cursors.left.isDown || this.wasd.A.isDown;
-        const right = this.cursors.right.isDown || this.wasd.D.isDown;
-        const up = this.cursors.up.isDown || this.wasd.W.isDown;
-        const down = this.cursors.down.isDown || this.wasd.S.isDown;
+        // Movement — read from native key set
+        const left  = this.keysDown.has('ArrowLeft')  || this.keysDown.has('KeyA');
+        const right = this.keysDown.has('ArrowRight') || this.keysDown.has('KeyD');
+        const up    = this.keysDown.has('ArrowUp')    || this.keysDown.has('KeyW');
+        const down  = this.keysDown.has('ArrowDown')  || this.keysDown.has('KeyS');
 
         let vx = 0;
         let vy = 0;
-        if (left) vx -= 1;
+        if (left)  vx -= 1;
         if (right) vx += 1;
-        if (up) vy -= 1;
-        if (down) vy += 1;
+        if (up)    vy -= 1;
+        if (down)  vy += 1;
 
         // Normalize diagonal
         if (vx !== 0 && vy !== 0) {
@@ -75,16 +76,21 @@ export class Player
             this.facingAngle = Math.atan2(vy, vx);
         }
 
-        // Melee
-        if (Phaser.Input.Keyboard.JustDown(this.attackKey)) {
-            this.triggerMelee(time, pointer);
+        // Keep melee arc anchored to player as they move
+        if (this.meleeGfx) {
+            this.meleeGfx.setPosition(this.sprite.x, this.sprite.y);
         }
 
-        // Ranged — on pointer active press (handled by Game scene via pointer)
+        // Melee — consume the edge-triggered flag set in keydown handler
+        if (this.meleeJustPressed) {
+            this.meleeJustPressed = false;
+            this.triggerMelee(time, pointer);
+        }
     }
 
     triggerMelee (time: number, pointer: Phaser.Input.Pointer): void
     {
+        if (!this.isAlive) return;
         if (time - this.lastMeleeTime < this.MELEE_COOLDOWN) return;
         this.lastMeleeTime = time;
 
@@ -123,21 +129,39 @@ export class Player
 
     private showMeleeFlash (angle: number): void
     {
-        if (this.meleeFlash) this.meleeFlash.destroy();
-        this.meleeFlash = this.scene.add.image(this.sprite.x, this.sprite.y, 'melee-flash');
-        this.meleeFlash.setRotation(angle);
-        this.meleeFlash.setDepth(20);
-        this.meleeFlash.setAlpha(0.9);
+        if (this.meleeGfx) this.meleeGfx.destroy();
+        this.meleeAngle = angle;
+
+        // Draw arc in LOCAL space (relative to Graphics object origin).
+        // The Graphics x,y is updated every frame in update() to follow the player.
+        const gfx = this.scene.add.graphics({ x: this.sprite.x, y: this.sprite.y });
+        gfx.setDepth(20);
+
+        const RADIUS = 44;
+        const SPREAD = Phaser.Math.DegToRad(70); // ±70° fan
+
+        gfx.fillStyle(0x80cbc4, 0.85);
+        gfx.lineStyle(1, 0xb2dfdb, 0.6);
+        gfx.beginPath();
+        gfx.moveTo(0, 0);
+        const steps = 14;
+        for (let i = 0; i <= steps; i++) {
+            const a = angle - SPREAD + (SPREAD * 2) * (i / steps);
+            gfx.lineTo(Math.cos(a) * RADIUS, Math.sin(a) * RADIUS);
+        }
+        gfx.closePath();
+        gfx.fillPath();
+        gfx.strokePath();
+
+        this.meleeGfx = gfx;
 
         this.scene.tweens.add({
-            targets: this.meleeFlash,
+            targets: gfx,
             alpha: 0,
-            duration: 150,
+            duration: 130,
             onComplete: () => {
-                if (this.meleeFlash) {
-                    this.meleeFlash.destroy();
-                    this.meleeFlash = null;
-                }
+                gfx.destroy();
+                if (this.meleeGfx === gfx) this.meleeGfx = null;
             }
         });
     }
@@ -178,7 +202,10 @@ export class Player
 
     destroy (): void
     {
-        if (this.meleeFlash) this.meleeFlash.destroy();
+        if (this.meleeGfx) this.meleeGfx.destroy();
+        window.removeEventListener('keydown', this.onKeyDown);
+        window.removeEventListener('keyup', this.onKeyUp);
+        this.keysDown.clear();
         this.sprite.destroy();
     }
 }
